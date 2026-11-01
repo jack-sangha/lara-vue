@@ -31,7 +31,11 @@ class TicketController extends Controller
      */
     public function store(StoreTicketRequest $request)
     {
-        //
+        $ticket = Ticket::create($request->validated());
+
+        return inertia('tickets/Show', [
+            'ticket' => $ticket,
+        ]);
     }
 
     /**
@@ -39,7 +43,9 @@ class TicketController extends Controller
      */
     public function show(Ticket $ticket)
     {
-        //
+        return inertia('tickets/Show', [
+            'ticket' => $ticket,
+        ]);
     }
 
     /**
