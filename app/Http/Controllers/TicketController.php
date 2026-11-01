@@ -53,7 +53,9 @@ class TicketController extends Controller
      */
     public function edit(Ticket $ticket)
     {
-        //
+        return inertia('tickets/Edit', [
+            'ticket' => $ticket,
+        ]);
     }
 
     /**
@@ -69,6 +71,8 @@ class TicketController extends Controller
      */
     public function destroy(Ticket $ticket)
     {
-        //
+        $ticket->delete();
+
+        return redirect()->route('tickets.index')->with('success', 'Ticket deleted successfully.');
     }
 }

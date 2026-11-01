@@ -11,7 +11,13 @@ import {
 import { Ticket } from "@/types";
 import { Head, Link } from "@inertiajs/vue3";
 import { Button } from "@/components/ui/button";
-import { tickets } from "@/routes/tickets";
+import {
+    create as createTicket,
+    index as ticketsIndex,
+    show as showTicket,
+    edit as editTicket,
+    destroy as destroyTicket,
+} from "@/routes/tickets";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -22,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Ellipsis } from "@lucide/vue";
 import { formatDate, truncate } from "@/lib/utils";
+import Show from "./Show.vue";
 
 type Props = {
     tickets: Ticket[];
@@ -34,7 +41,7 @@ defineOptions({
         breadcrumbs: [
             {
                 title: "Tickets",
-                href: tickets.index(),
+                href: ticketsIndex(),
             },
         ],
     },
@@ -59,7 +66,7 @@ defineOptions({
                     />
                 </div>
             </div>
-            <Link :href="tickets.create()">
+            <Link :href="createTicket()">
                 <Button>Create Ticket</Button>
             </Link>
         </div>
@@ -94,19 +101,23 @@ defineOptions({
                             <DropdownMenuContent class="w-56" align="start">
                                 <DropdownMenuGroup>
                                     <DropdownMenuItem>
-                                        View
+                                        <Show :ticketID="ticket.id" />
                                         <DropdownMenuShortcut>
                                             ⇧⌘V
                                         </DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>
-                                        Edit
+                                        <Link :href="editTicket(ticket.id)">
+                                            <Button>Edit</Button>
+                                        </Link>
                                         <DropdownMenuShortcut>
                                             ⇧⌘E
                                         </DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>
-                                        Delete
+                                        <Link :href="destroyTicket(ticket.id)">
+                                            <Button>Delete</Button>
+                                        </Link>
                                         <DropdownMenuShortcut>
                                             ⇧⌘D
                                         </DropdownMenuShortcut>
