@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import Heading from "@/components/Heading.vue";
-import Button from "@/components/ui/button/Button.vue";
 import {
     Table,
     TableBody,
-    TableCaption,
     TableCell,
-    TableFooter,
     TableHead,
     TableHeader,
     TableRow,
@@ -14,6 +11,17 @@ import {
 import { index } from "@/routes/tickets";
 import { Ticket } from "@/types";
 import { Head } from "@inertiajs/vue3";
+import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuShortcut,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Ellipsis } from "@lucide/vue";
+import { formatDate, truncate } from "@/lib/utils";
 
 type Props = {
     tickets: Ticket[];
@@ -53,27 +61,53 @@ defineOptions({
                         <TableHead>Title</TableHead>
                         <TableHead>Description</TableHead>
                         <TableHead>Created At</TableHead>
-                        <TableHead class="text-right">Actions</TableHead>
+                        <TableHead>Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     <TableRow v-for="ticket in tickets" :key="ticket.id">
                         <TableCell class="font-medium">
-                            {{ ticket.title }}
+                            {{ truncate(ticket.title, 30) }}
                         </TableCell>
-                        <TableCell>{{ ticket.description }}</TableCell>
-                        <TableCell class="text-right">
-                            {{ ticket.created_at }}
+                        <TableCell>{{
+                            truncate(ticket.description, 50)
+                        }}</TableCell>
+                        <TableCell>
+                            {{ formatDate(ticket.created_at) }}
                         </TableCell>
-                        <TableCell class="text-right flex gap-1"> </TableCell>
+                        <TableCell class="text-right flex gap-1">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger as-child>
+                                    <Button variant="outline">
+                                        <Ellipsis class="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent class="w-56" align="start">
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem>
+                                            View
+                                            <DropdownMenuShortcut>
+                                                ⇧⌘V
+                                            </DropdownMenuShortcut>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem>
+                                            Edit
+                                            <DropdownMenuShortcut>
+                                                ⇧⌘E
+                                            </DropdownMenuShortcut>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem>
+                                            Delete
+                                            <DropdownMenuShortcut>
+                                                ⇧⌘D
+                                            </DropdownMenuShortcut>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TableCell>
                     </TableRow>
                 </TableBody>
-                <TableFooter>
-                    <TableRow>
-                        <TableCell colspan="3"> Total </TableCell>
-                        <TableCell class="text-right"> $2,500.00 </TableCell>
-                    </TableRow>
-                </TableFooter>
             </Table>
         </div>
     </div>
