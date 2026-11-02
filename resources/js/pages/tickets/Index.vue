@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Heading from "@/components/Heading.vue";
+import Heading from '@/components/Heading.vue';
 import {
     Table,
     TableBody,
@@ -7,17 +7,16 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table";
-import { Ticket } from "@/types";
-import { Head, Link } from "@inertiajs/vue3";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/table';
+import { Ticket } from '@/types';
+import { Head, Link } from '@inertiajs/vue3';
+import { Button } from '@/components/ui/button';
 import {
     create as createTicket,
     index as ticketsIndex,
-    show as showTicket,
     edit as editTicket,
     destroy as destroyTicket,
-} from "@/routes/tickets";
+} from '@/routes/tickets';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -25,10 +24,10 @@ import {
     DropdownMenuItem,
     DropdownMenuShortcut,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Ellipsis } from "@lucide/vue";
-import { formatDate, truncate } from "@/lib/utils";
-import Show from "./Show.vue";
+} from '@/components/ui/dropdown-menu';
+import { Ellipsis } from '@lucide/vue';
+import { formatDate, truncate } from '@/lib/utils';
+import Show from './Show.vue';
 
 type Props = {
     tickets: Ticket[];
@@ -40,7 +39,7 @@ defineOptions({
     layout: {
         breadcrumbs: [
             {
-                title: "Tickets",
+                title: 'Tickets',
                 href: ticketsIndex(),
             },
         ],
@@ -54,7 +53,7 @@ defineOptions({
     <div
         class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
     >
-        <div class="flex justify-between items-center">
+        <div class="flex items-center justify-between">
             <div>
                 <h1 class="sr-only">Tickets</h1>
 
@@ -91,7 +90,7 @@ defineOptions({
                     <TableCell>
                         {{ formatDate(ticket.created_at) }}
                     </TableCell>
-                    <TableCell class="text-right flex gap-1">
+                    <TableCell class="flex gap-1 text-right">
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
                                 <Button variant="outline">
@@ -100,19 +99,23 @@ defineOptions({
                             </DropdownMenuTrigger>
                             <DropdownMenuContent class="w-56" align="start">
                                 <DropdownMenuGroup>
-                                    <DropdownMenuItem>
-                                        <Show :ticketID="ticket.id" />
-                                        <DropdownMenuShortcut>
-                                            ⇧⌘V
-                                        </DropdownMenuShortcut>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
+                                    <Show :ticket="ticket">
+                                        <template #trigger>
+                                            <DropdownMenuItem>
+                                                View
+                                                <DropdownMenuShortcut>
+                                                    ⇧⌘V
+                                                </DropdownMenuShortcut>
+                                            </DropdownMenuItem>
+                                        </template>
+                                    </Show>
+                                    <DropdownMenuItem as-child>
                                         <Link :href="editTicket(ticket.id)">
-                                            <Button>Edit</Button>
+                                            Edit
+                                            <DropdownMenuShortcut>
+                                                ⇧⌘E
+                                            </DropdownMenuShortcut>
                                         </Link>
-                                        <DropdownMenuShortcut>
-                                            ⇧⌘E
-                                        </DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>
                                         <Link :href="destroyTicket(ticket.id)">

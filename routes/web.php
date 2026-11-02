@@ -7,7 +7,8 @@ Route::inertia('/', 'Welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+    Route::get('tickets/{ticket}/details', [TicketController::class, 'details'])->name('tickets.details');
     Route::resource('tickets', TicketController::class);
 });
 
-require __DIR__ . '/settings.php';
+require __DIR__.'/settings.php';

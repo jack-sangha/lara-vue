@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTicketRequest;
 use App\Http\Requests\UpdateTicketRequest;
 use App\Models\Ticket;
+use Illuminate\Http\JsonResponse;
 
 class TicketController extends Controller
 {
@@ -46,6 +47,11 @@ class TicketController extends Controller
         return inertia('tickets/Show', [
             'ticket' => $ticket,
         ]);
+    }
+
+    public function details(Ticket $ticket): JsonResponse
+    {
+        return response()->json($ticket);
     }
 
     /**
