@@ -86,12 +86,13 @@ watchDebounced(
                     <TableHead>Title</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created</TableHead>
+                    <TableHead>Actions</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
                 <TableRow v-if="!tickets.data.length">
                     <TableCell
-                        colspan="5"
+                        colspan="4"
                         class="text-muted-foreground text-center"
                         >No tickets found.</TableCell
                     >
@@ -110,6 +111,16 @@ watchDebounced(
                     <TableCell>{{
                         (t.creator.name ?? "") + " " + formatDate(t.created_at)
                     }}</TableCell>
+                    <TableCell>
+                        <div class="flex gap-2">
+                            <Button as-child variant="outline" size="sm">
+                                <Link :href="`/tickets/${t.id}`">Show</Link>
+                            </Button>
+                            <Button as-child variant="outline" size="sm">
+                                <Link :href="`/tickets/${t.id}/edit`">Edit</Link>
+                            </Button>
+                        </div>
+                    </TableCell>
                 </TableRow>
             </TableBody>
         </Table>
