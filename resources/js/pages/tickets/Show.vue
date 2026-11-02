@@ -1,121 +1,136 @@
 <script setup lang="ts">
-import { useHttp } from '@inertiajs/vue3';
-import { ref } from 'vue';
-import { formatDate } from '@/lib/utils';
-import type { Ticket } from '@/types';
-import { Button } from '@/components/ui/button';
+import { Form, Link, router } from "@inertiajs/vue3";
+import AppLayout from "@/layouts/AppLayout.vue";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
-import { details as ticketDetailsRoute } from '@/routes/tickets';
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { formatDate } from "@/lib/utils";
 
 const props = defineProps<{
-    ticket: Ticket;
+    ticket: any;
+    agents: { id: number; name: string }[];
+    can: { update: boolean; changeStatus: boolean; assign: boolean }; // from Laravel policies
 }>();
 
-const http = useHttp<Record<string, never>, Ticket>({});
-const isOpen = ref(false);
-const isLoading = ref(false);
-const loadError = ref<string | null>(null);
-const ticketDetails = ref<Ticket | null>(null);
-let requestId = 0;
-
-const fetchTicketDetails = async (): Promise<void> => {
-    const currentRequestId = ++requestId;
-    isLoading.value = true;
-    loadError.value = null;
-    ticketDetails.value = null;
-
-    try {
-        const freshTicket = await http.get(
-            ticketDetailsRoute(props.ticket.id).url,
-        );
-
-        if (currentRequestId === requestId) {
-            ticketDetails.value = freshTicket;
-        }
-    } catch {
-        if (currentRequestId === requestId) {
-            loadError.value =
-                'Unable to load ticket details. Please try again.';
-        }
-    } finally {
-        if (currentRequestId === requestId) {
-            isLoading.value = false;
-        }
-    }
+const next: Record<string, string | undefined> = {
+    open: "in_progress",
+    in_progress: "resolved",
 };
-
-const handleOpenChange = (open: boolean): void => {
-    isOpen.value = open;
-
-    if (open) {
-        void fetchTicketDetails();
-        return;
-    }
-
-    requestId++;
-    http.cancel();
-    isLoading.value = false;
-};
+const base = `/tickets/${props.ticket.id}`;
 </script>
 
 <template>
-    <Dialog :open="isOpen" @update:open="handleOpenChange">
-        <DialogTrigger as-child>
-            <slot name="trigger">
-                <Button variant="ghost">View</Button>
-            </slot>
-        </DialogTrigger>
-        <DialogContent class="sm:max-w-[425px]">
-            <DialogHeader>
-                <DialogTitle>
-                    {{ ticketDetails?.title ?? ticket.title }}
-                </DialogTitle>
-                <DialogDescription>Ticket details</DialogDescription>
-            </DialogHeader>
-
-            <p
-                v-if="isLoading"
-                role="status"
-                class="text-sm text-muted-foreground"
-            >
-                Loading ticket details...
-            </p>
-
-            <div v-else-if="loadError" role="alert" class="grid gap-3">
-                <p class="text-sm text-destructive">{{ loadError }}</p>
-                <Button
-                    variant="outline"
-                    class="w-fit"
-                    @click="fetchTicketDetails"
-                >
-                    Try again
+    <AppLayout>
+        <div class="mx-auto max-w-3xl space-y-4 p-6">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl font-semibold">{{ ticket.title }}</h1>
+                <Button v-if="can.update" as-child variant="outline" size="sm">
+                    <Link :href="`${base}/edit`">Edit</Link>
                 </Button>
             </div>
 
-            <div v-else-if="ticketDetails" class="grid gap-4">
-                <div class="grid gap-2">
-                    <h2 class="text-sm font-medium">Description</h2>
-                    <p class="text-sm text-muted-foreground">
-                        {{ ticketDetails.description }}
+            <div class="flex flex-wrap gap-2">
+                <Badge>{{ ticket.status }}</Badge>
+                <Badge variant="outline">{{ ticket.priority }}</Badge>
+                <Badge
+                    v-for="c in ticket.categories"
+                    :key="c.id"
+                    variant="secondary"
+                    >{{ c.name }}</Badge
+                >
+            </div>
+
+            <p class="whitespace-pre-line text-sm">{{ ticket.description }}</p>
+            <p class="text-muted-foreground text-xs">
+                {{ ticket.creator.name }} ·
+                {{ formatDate(ticket.created_at, true) }}
+            </p>
+
+            <div
+                v-if="can.changeStatus || can.assign"
+                class="flex gap-3 border-t pt-4"
+            >
+                <Button
+                    v-if="can.changeStatus && next[ticket.status]"
+                    as-child
+                    size="sm"
+                >
+                    <Link
+                        as="button"
+                        method="patch"
+                        :href="`${base}/status`"
+                        :data="{ status: next[ticket.status] }"
+                        preserve-scroll
+                    >
+                        Mark {{ next[ticket.status] }}
+                    </Link>
+                </Button>
+
+                <Select
+                    v-if="can.assign"
+                    :model-value="String(ticket.assignee?.id ?? '')"
+                    @update:model-value="
+                        (id) =>
+                            router.post(
+                                `${base}/assign`,
+                                { assigned_to: id },
+                                { preserveScroll: true },
+                            )
+                    "
+                >
+                    <SelectTrigger class="w-48"
+                        ><SelectValue placeholder="Assign to…"
+                    /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem
+                            v-for="a in agents"
+                            :key="a.id"
+                            :value="String(a.id)"
+                            >{{ a.name }}</SelectItem
+                        >
+                    </SelectContent>
+                </Select>
+            </div>
+
+            <div class="space-y-3 border-t pt-4">
+                <p
+                    v-if="!ticket.comments.length"
+                    class="text-muted-foreground text-sm"
+                >
+                    No comments yet.
+                </p>
+                <div
+                    v-for="c in ticket.comments"
+                    :key="c.id"
+                    class="rounded-md border p-3 text-sm"
+                >
+                    {{ c.body }}
+                    <p class="text-muted-foreground mt-1 text-xs">
+                        {{ c.user.name }} · {{ formatDate(c.created_at, true) }}
                     </p>
                 </div>
-                <div class="grid gap-2">
-                    <h2 class="text-sm font-medium">Created</h2>
-                    <time
-                        class="text-sm text-muted-foreground"
-                        :datetime="ticketDetails.created_at"
-                    >
-                        {{ formatDate(ticketDetails.created_at) }}
-                    </time>
-                </div>
+
+                <!-- reset-on-success clears the textarea after a successful post -->
+                <Form
+                    :action="`${base}/comments`"
+                    method="post"
+                    reset-on-success
+                    :options="{ preserveScroll: true }"
+                    #default="{ errors, processing }"
+                    class="space-y-2"
+                >
+                    <Textarea name="body" placeholder="Add a comment" />
+                    <p class="text-sm text-red-600">{{ errors.body }}</p>
+                    <Button size="sm" :disabled="processing">Post</Button>
+                </Form>
             </div>
-        </DialogContent>
-    </Dialog>
+        </div>
+    </AppLayout>
 </template>

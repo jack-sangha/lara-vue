@@ -15,8 +15,14 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description');
+            $table->string('status')->default('open')->index();
+            $table->string('priority')->default('medium')->index();
+            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
-            $table->softDeletes();
+
+            $table->index(['created_by', 'created_at']);
+            $table->index('created_at');
         });
     }
 

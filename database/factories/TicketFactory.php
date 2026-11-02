@@ -18,8 +18,12 @@ class TicketFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => fake()->sentence(),
+            'title' => fake()->sentence(6),
             'description' => fake()->paragraph(),
+            'status' => fake()->randomElement(['open', 'in_progress', 'resolved']),
+            'priority' => fake()->randomElement(['low', 'medium', 'high']),
+            'created_by' => User::factory(),
+            'assigned_to' => null,
         ];
     }
 }
