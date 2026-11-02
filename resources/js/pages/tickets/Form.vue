@@ -4,8 +4,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { index } from "@/routes/tickets";
 
 defineProps<{ ticket?: any }>();
+
+defineOptions({
+    layout: {
+        breadcrumbs: [
+            {
+                title: "Tickets",
+                href: index(),
+            },
+            {
+                title: "Ticket Form",
+            },
+        ],
+    },
+});
 </script>
 
 <template>

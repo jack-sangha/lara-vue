@@ -22,6 +22,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/utils";
+import { index } from "@/routes/tickets";
 
 const props = defineProps<{
     tickets: {
@@ -50,6 +51,17 @@ watchDebounced(
         ),
     { debounce: 400, deep: true },
 );
+
+defineOptions({
+    layout: {
+        breadcrumbs: [
+            {
+                title: "Tickets",
+                href: index(),
+            },
+        ],
+    },
+});
 </script>
 
 <template>
@@ -117,7 +129,9 @@ watchDebounced(
                                 <Link :href="`/tickets/${t.id}`">Show</Link>
                             </Button>
                             <Button as-child variant="outline" size="sm">
-                                <Link :href="`/tickets/${t.id}/edit`">Edit</Link>
+                                <Link :href="`/tickets/${t.id}/edit`"
+                                    >Edit</Link
+                                >
                             </Button>
                         </div>
                     </TableCell>
