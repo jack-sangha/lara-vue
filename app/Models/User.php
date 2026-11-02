@@ -47,8 +47,8 @@ class User extends Authenticatable implements PasskeyUser
         ];
     }
 
-    public function isAgent(): bool
+    public function isAdmin(): bool
     {
-        return $this->role === 'agent';
+        return $this->role === 'admin';
     }
 }

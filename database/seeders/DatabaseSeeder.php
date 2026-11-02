@@ -15,6 +15,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        User::factory()->create([
+            'name' => 'Admin User',
+            'email' => 'nirbhau.jass@gmail.com',
+            'password' => '123456789',
+            'role' => 'admin',
+        ]);
+
         $this->call([
             TicketSeeder::class,
         ]);

@@ -21,11 +21,9 @@ class TicketResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'status' => $this->status,
-            'priority' => $this->priority,
             'created_at' => $this->created_at,
             'creator' => $this->whenLoaded('creator', fn() => $this->creator->only('id', 'name')),
             'assignee' => $this->whenLoaded('assignee', fn() => $this->assignee?->only('id', 'name')),
-            'categories' => $this->whenLoaded('categories', fn() => $this->categories->map->only('id', 'name')),
         ];
     }
 }

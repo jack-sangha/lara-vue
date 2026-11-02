@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Ticket;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class TicketPolicy
 {
@@ -21,7 +20,7 @@ class TicketPolicy
      */
     public function view(User $user, Ticket $ticket): bool
     {
-        return $user->isAgent() || $ticket->created_by === $user->id;
+        return $user->isAdmin() || $ticket->created_by === $user->id;
     }
 
     /**
@@ -29,7 +28,7 @@ class TicketPolicy
      */
     public function create(User $user): bool
     {
-        return ! $user->isAgent();
+        return true; //! $user->isAdmin();
     }
 
     /**

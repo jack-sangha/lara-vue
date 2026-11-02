@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTicketRequest;
 use App\Http\Requests\UpdateTicketRequest;
 use App\Http\Resources\TicketResource;
-use App\Models\Ticket;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
+use App\Models\Ticket;
 use Inertia\Inertia;
 
 class TicketController extends Controller
@@ -20,10 +20,10 @@ class TicketController extends Controller
     public function index(Request $request)
     {
         Gate::authorize('viewAny', Ticket::class);
-        $filters = $request->only('search', 'status', 'priority', 'category');
+        $filters = $request->only('title', 'status');
 
         $tickets = Ticket::query()
-            ->with('assignee:id,name')
+            ->with('creator:id,name')
             ->visibleTo($request->user())
             ->filter($filters)
             ->latest()->latest('id') // id breaks created_at ties so pages never repeat rows
@@ -43,7 +43,7 @@ class TicketController extends Controller
     {
         Gate::authorize('create', Ticket::class);
 
-        return Inertia::render('tickets/Form', ['categories' => Category::get(['id', 'name'])]);
+        return Inertia::render('tickets/Form');
     }
 
     /**
@@ -53,8 +53,7 @@ class TicketController extends Controller
     {
         // Transaction so a failed category sync doesn't leave an orphan ticket.
         $ticket = DB::transaction(function () use ($request) {
-            $ticket = Ticket::create([...$request->safe()->except('category_ids'), 'created_by' => $request->user()->id]);
-            $ticket->categories()->sync($request->validated('category_ids', []));
+            $ticket = Ticket::create([...$request->safe(), 'created_by' => $request->user()->id]);
 
             return $ticket;
         });
@@ -70,7 +69,7 @@ class TicketController extends Controller
         Gate::authorize('view', $ticket);
 
         // One query per relation, constant regardless of data size.
-        $ticket->load(['creator:id,name', 'assignee:id,name', 'categories:id,name']);
+        $ticket->load(['creator:id,name']);
 
         return Inertia::render('tickets/Show', [
             'ticket' => TicketResource::make($ticket)->resolve(), // resolve() drops the "data" wrapper
@@ -90,8 +89,7 @@ class TicketController extends Controller
         Gate::authorize('update', $ticket);
 
         return Inertia::render('tickets/Form', [
-            'ticket' => TicketResource::make($ticket->load('categories:id,name'))->resolve(),
-            'categories' => Category::get(['id', 'name']),
+            'ticket' => TicketResource::make($ticket)->resolve(),
         ]);
     }
 
@@ -101,8 +99,7 @@ class TicketController extends Controller
     public function update(UpdateTicketRequest $request, Ticket $ticket)
     {
         DB::transaction(function () use ($request, $ticket) {
-            $ticket->update($request->safe()->except('category_ids'));
-            $ticket->categories()->sync($request->validated('category_ids', []));
+            $ticket->update([...$request->safe()]);
         });
 
         return to_route('tickets.show', $ticket);
